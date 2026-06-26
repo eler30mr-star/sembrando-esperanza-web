@@ -11,8 +11,7 @@ export default function StoryDetail() {
   }
 
   return (
-    <section className="section page">
-      <Link className="back-link" to="/historias">← Volver a historias</Link>
+    <section className="immersive-reader-page">
       <BookReader title={story.title} subtitle={story.description} pages={story.pages} />
     </section>
   );
