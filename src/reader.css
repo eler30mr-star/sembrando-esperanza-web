@@ -3,9 +3,18 @@
 }
 
 .immersive-reader-top h1 {
-  font-size: clamp(1.55rem, 6.4vw, 3.2rem) !important;
+  font-size: clamp(1.45rem, 5.6vw, 2.9rem) !important;
   line-height: 0.98 !important;
   margin-top: 6px !important;
+  margin-bottom: 3px !important;
+}
+
+.reader-chapter-title {
+  margin: 0;
+  color: var(--gold-dark);
+  font-size: clamp(0.95rem, 2.7vw, 1.22rem);
+  line-height: 1.2;
+  font-weight: 900;
 }
 
 .immersive-reader-top {
@@ -24,8 +33,12 @@
 
 @media (max-width: 620px) {
   .immersive-reader-top h1 {
-    font-size: clamp(1.45rem, 7vw, 2.25rem) !important;
+    font-size: clamp(1.35rem, 6.5vw, 2.05rem) !important;
     line-height: 0.98 !important;
+  }
+
+  .reader-chapter-title {
+    font-size: 0.95rem;
   }
 
   .immersive-book-page {
