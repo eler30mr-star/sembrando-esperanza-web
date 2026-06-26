@@ -48,11 +48,11 @@ function chunkText(text, maxChars) {
 }
 
 function getMaxChars() {
-  if (typeof window === 'undefined') return 720;
-  if (window.innerWidth <= 420) return 760;
-  if (window.innerWidth <= 620) return 860;
-  if (window.innerWidth <= 900) return 1050;
-  return 1350;
+  if (typeof window === 'undefined') return 520;
+  if (window.innerWidth <= 420) return 430;
+  if (window.innerWidth <= 620) return 520;
+  if (window.innerWidth <= 900) return 780;
+  return 1180;
 }
 
 function normalizeChapters({ chapters = [], pages = [] }) {
