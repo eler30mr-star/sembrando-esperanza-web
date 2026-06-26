@@ -51,10 +51,10 @@ export const stories = [
     image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
     description: 'Una lectura para recordar que el silencio de Dios no significa abandono.',
     pages: [
-      'Hay temporadas en las que oramos y parece que nada cambia. El corazón espera una respuesta rápida, una señal clara o una puerta abierta, pero el cielo parece guardar silencio.',
-      'Sin embargo, el silencio no siempre significa ausencia. Muchas veces Dios trabaja en lo profundo, donde nuestros ojos todavía no pueden ver. Él forma paciencia, ordena caminos y fortalece la fe.',
-      'La fe verdadera no solo cree cuando ve resultados. También permanece cuando el proceso es lento, cuando la respuesta tarda y cuando el alma necesita descansar en la promesa de Dios.',
-      'Hoy recuerda esto: Dios no se ha olvidado de ti. Su tiempo no es descuido; su silencio no es abandono. Sigue confiando, porque Él también trabaja cuando todo parece quieto.'
+      'Hay temporadas en las que oramos y parece que nada cambia. El corazón espera una respuesta rápida, una señal clara o una puerta abierta, pero el cielo parece guardar silencio.\n\nEn esos momentos, la mente puede llenarse de preguntas: ¿Dios me escucha?, ¿se habrá olvidado de mí?, ¿por qué tarda tanto la respuesta? Pero el silencio de Dios no siempre significa distancia. A veces es el lugar donde Él está formando una fe más profunda, una confianza que no depende solo de lo que vemos, sino de quién es Él.',
+      'Muchas veces Dios trabaja en lo profundo, donde nuestros ojos todavía no pueden ver. Mientras nosotros miramos la superficie, Él está ordenando caminos, sanando heridas, cerrando puertas que no convenían y preparando respuestas que llegarán en el tiempo correcto.\n\nEl agricultor no ve la semilla crecer bajo la tierra, pero sabe que algo está ocurriendo. Así también, cuando parece que nada se mueve, Dios puede estar trabajando en silencio. Su obra no siempre hace ruido, pero siempre tiene propósito.',
+      'La fe verdadera no solo cree cuando ve resultados. También permanece cuando el proceso es lento, cuando la respuesta tarda y cuando el alma necesita aprender a descansar. Confiar en Dios en el silencio es decir: Señor, aunque no entiendo todo, sé que tus manos siguen sosteniendo mi vida.\n\nNo toda espera es castigo. A veces la espera es preparación. A veces Dios no cambia primero la situación, sino el corazón, para que cuando llegue la respuesta podamos recibirla con madurez, humildad y paz.',
+      'Hoy recuerda esto: Dios no se ha olvidado de ti. Su tiempo no es descuido; su silencio no es abandono. Sigue orando, sigue creyendo y sigue caminando con esperanza.\n\nCuando no escuches una respuesta inmediata, vuelve a sus promesas. Cuando no veas una salida clara, descansa en su fidelidad. El mismo Dios que abrió caminos antes, también puede abrirlos ahora. Él también trabaja cuando todo parece quieto.'
     ]
   },
   {
@@ -65,9 +65,9 @@ export const stories = [
     image: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1200&q=80',
     description: 'Una historia corta sobre esperanza, paciencia y confianza en Dios.',
     pages: [
-      'Una mujer caminaba cada mañana al mismo lugar para orar. No tenía respuestas para todo, pero tenía una certeza: Dios seguía siendo bueno.',
-      'Con el paso de los días, descubrió que la oración no solo cambia circunstancias; también cambia el corazón de quien espera.',
-      'Su situación no terminó de inmediato, pero su interior comenzó a llenarse de paz. Comprendió que la fe no es negar la prueba, sino caminar con Dios dentro de ella.'
+      'Una mujer caminaba cada mañana al mismo lugar para orar. No tenía respuestas para todo, pero tenía una certeza: Dios seguía siendo bueno. Aunque sus circunstancias no cambiaban de inmediato, cada oración le recordaba que no estaba sola.',
+      'Con el paso de los días, descubrió que la oración no solo cambia circunstancias; también cambia el corazón de quien espera. La paz empezó a llegar poco a poco, no como una explicación completa, sino como una fuerza nueva para continuar.',
+      'Su situación no terminó de inmediato, pero su interior comenzó a llenarse de esperanza. Comprendió que la fe no es negar la prueba, sino caminar con Dios dentro de ella, creyendo que aun en medio del valle, su presencia sigue siendo suficiente.'
     ]
   }
 ];
