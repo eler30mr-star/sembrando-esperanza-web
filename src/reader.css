@@ -1,24 +1,54 @@
+html:has(.immersive-reader-page),
+body:has(.immersive-reader-page),
+#root:has(.immersive-reader-page),
+.site-shell:has(.immersive-reader-page) {
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.immersive-reader-page {
+  height: 100svh !important;
+  min-height: 100svh !important;
+  overflow: hidden;
+}
+
 .immersive-reader {
+  height: calc(100svh - 16px) !important;
+  min-height: 0 !important;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px !important;
 }
 
 .immersive-reader-top h1 {
-  font-size: clamp(1.45rem, 5.6vw, 2.9rem) !important;
+  font-size: clamp(1.35rem, 5vw, 2.7rem) !important;
   line-height: 0.98 !important;
-  margin-top: 6px !important;
-  margin-bottom: 3px !important;
+  margin-top: 4px !important;
+  margin-bottom: 2px !important;
 }
 
 .reader-chapter-title {
   margin: 0;
   color: var(--gold-dark);
-  font-size: clamp(0.95rem, 2.7vw, 1.22rem);
-  line-height: 1.2;
+  font-size: clamp(0.88rem, 2.3vw, 1.1rem);
+  line-height: 1.15;
   font-weight: 900;
 }
 
-.immersive-reader-top {
-  gap: 6px !important;
+.page-count {
+  padding: 7px 11px !important;
+  font-size: 0.86rem;
+}
+
+.immersive-book-stage {
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden;
+}
+
+.immersive-book-page {
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
 }
 
 .immersive-book-page p {
@@ -31,28 +61,70 @@
   word-spacing: 0.01em;
 }
 
+.immersive-reader-controls {
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+}
+
 @media (max-width: 620px) {
+  .immersive-reader-page {
+    padding: 6px !important;
+  }
+
+  .immersive-reader {
+    height: calc(100svh - 12px) !important;
+    padding: 7px !important;
+    gap: 7px !important;
+  }
+
   .immersive-reader-top h1 {
-    font-size: clamp(1.35rem, 6.5vw, 2.05rem) !important;
+    font-size: clamp(1.08rem, 5.6vw, 1.62rem) !important;
     line-height: 0.98 !important;
   }
 
   .reader-chapter-title {
-    font-size: 0.95rem;
+    font-size: 0.78rem;
+    line-height: 1.1;
+  }
+
+  .page-count {
+    padding: 6px 10px !important;
+    font-size: 0.78rem;
+  }
+
+  .immersive-book-stage {
+    padding: 7px !important;
   }
 
   .immersive-book-page {
-    padding: 28px 24px 42px;
+    padding: 22px 20px 34px !important;
   }
 
   .immersive-book-page p {
-    font-size: 1.05rem;
-    line-height: 1.72;
+    font-size: 0.98rem !important;
+    line-height: 1.56 !important;
     text-align: justify;
     text-justify: inter-word;
     hyphens: none;
     word-break: normal;
     overflow-wrap: normal;
     word-spacing: 0;
+  }
+
+  .immersive-reader-controls {
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .reader-home-button,
+  .reader-audio-button {
+    min-height: 40px !important;
+    padding: 0 12px !important;
+    font-size: 0.95rem;
+  }
+
+  .reader-triangle {
+    width: 46px !important;
+    min-width: 46px !important;
+    min-height: 40px !important;
   }
 }
