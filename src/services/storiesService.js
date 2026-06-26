@@ -1,4 +1,4 @@
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { stories as localStories } from '../data/content.js';
 import { db, firebaseReady } from './firebase.js';
 
@@ -19,18 +19,19 @@ function normalizeStory(snapshot) {
   };
 }
 
+function sortByUpdatedAt(items) {
+  return [...items].sort((a, b) => Number(b.updatedAtMs || 0) - Number(a.updatedAtMs || 0));
+}
+
 export async function getPublishedStories() {
   if (!firebaseReady || !db) return localStories;
 
   try {
-    const q = query(
-      collection(db, 'stories'),
-      where('status', '==', 'published'),
-      orderBy('updatedAtMs', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    const firebaseStories = snapshot.docs.map(normalizeStory);
-    return firebaseStories.length ? firebaseStories : localStories;
+    const snapshot = await getDocs(collection(db, 'stories'));
+    const firebaseStories = snapshot.docs
+      .map(normalizeStory)
+      .filter((story) => story.status === 'published');
+    return firebaseStories.length ? sortByUpdatedAt(firebaseStories) : localStories;
   } catch (error) {
     console.error('No se pudieron cargar historias desde Firebase.', error);
     return localStories;
