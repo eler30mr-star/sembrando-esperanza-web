@@ -1,0 +1,28 @@
+.immersive-book-page p {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  overflow-wrap: normal;
+  letter-spacing: 0.005em;
+  word-spacing: 0.04em;
+}
+
+.immersive-book-page p::first-letter {
+  font-size: 1.12em;
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .immersive-book-page {
+    padding: 26px 22px 42px;
+  }
+
+  .immersive-book-page p {
+    font-size: 0.98rem;
+    line-height: 1.54;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+    word-spacing: 0.02em;
+  }
+}
