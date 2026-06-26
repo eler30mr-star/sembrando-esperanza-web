@@ -155,14 +155,16 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
             Capítulo {currentPage.chapterNumber} · {footerLabel} {currentPage.chapterPage} de {currentPage.chapterTotalPages}
           </span>
           <h1>{title}</h1>
-          <h2 className="reader-chapter-title">{currentPage.chapterTitle}</h2>
         </div>
       </div>
 
       <div className="book-stage immersive-book-stage">
         <article className="book-page immersive-book-page" key={`${currentPage.chapterNumber}-${currentPage.chapterPage}`}>
           <div className="paper-grain" />
-          <p>{currentPage.content}</p>
+          <div className="reader-page-content">
+            <h2 className="reader-chapter-title">{currentPage.chapterTitle}</h2>
+            <p>{currentPage.content}</p>
+          </div>
           <span className="page-number">{page + 1}</span>
         </article>
       </div>
