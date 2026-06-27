@@ -35,7 +35,14 @@ export default function StoryDetail() {
 
   return (
     <section className="immersive-reader-page">
-      <BookReader title={story.title} subtitle={story.description} chapters={story.chapters} pages={story.pages} />
+      <BookReader
+        title={story.title}
+        subtitle={story.description}
+        chapters={story.chapters}
+        pages={story.pages}
+        storyId={story.id}
+        storySlug={story.slug}
+      />
     </section>
   );
 }
