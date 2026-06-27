@@ -1,12 +1,31 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, PlayCircle, Sparkles } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader.jsx';
 import ContentCard from '../components/ContentCard.jsx';
 import AppStoreCard from '../components/AppStoreCard.jsx';
-import { albums, plans, prayers, stories, verses, videos } from '../data/content.js';
+import { albums, plans, prayers, stories as localStories, verses, videos } from '../data/content.js';
+import { getPublishedStories } from '../services/storiesService.js';
 
 export default function Home() {
   const verse = verses[1];
+  const [publishedStories, setPublishedStories] = useState(localStories);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadStories() {
+      const stories = await getPublishedStories();
+      if (!alive) return;
+      setPublishedStories(stories);
+    }
+
+    loadStories();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   return (
     <>
@@ -60,7 +79,7 @@ export default function Home() {
       <section className="section">
         <SectionHeader eyebrow="Biblioteca" title="Historias y reflexiones" description="Lecturas con estilo de libro para meditar con calma." />
         <div className="card-grid two">
-          {stories.map((story) => (
+          {publishedStories.slice(0, 4).map((story) => (
             <ContentCard
               key={story.slug}
               image={story.image}
