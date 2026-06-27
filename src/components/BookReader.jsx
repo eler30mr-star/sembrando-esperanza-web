@@ -71,6 +71,21 @@ function normalizeChapters({ chapters = [], pages = [] }) {
   ];
 }
 
+const centeredHeaderStyle = {
+  justifyContent: 'center',
+  textAlign: 'center'
+};
+
+const centeredHeaderInnerStyle = {
+  width: '100%',
+  textAlign: 'center'
+};
+
+const readerTextStyle = {
+  fontSize: '1.04rem',
+  lineHeight: 1.58
+};
+
 export default function BookReader({ title, subtitle, chapters = [], pages = [], footerLabel = 'Página' }) {
   const [page, setPage] = useState(0);
   const [speaking, setSpeaking] = useState(false);
@@ -149,12 +164,12 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
 
   return (
     <section className="reader-shell immersive-reader">
-      <div className="reader-top immersive-reader-top">
-        <div>
+      <div className="reader-top immersive-reader-top" style={centeredHeaderStyle}>
+        <div style={centeredHeaderInnerStyle}>
           <span className="page-count">
             Capítulo {currentPage.chapterNumber} · {footerLabel} {currentPage.chapterPage} de {currentPage.chapterTotalPages}
           </span>
-          <h1>{title}</h1>
+          <h1 style={{ textAlign: 'center' }}>{title}</h1>
         </div>
       </div>
 
@@ -163,7 +178,7 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
           <div className="paper-grain" />
           <div className="reader-page-content">
             <h2 className="reader-chapter-title">{currentPage.chapterTitle}</h2>
-            <p>{currentPage.content}</p>
+            <p style={readerTextStyle}>{currentPage.content}</p>
           </div>
           <span className="page-number">{page + 1}</span>
         </article>
