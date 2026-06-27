@@ -167,6 +167,7 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
   const [user, setUser] = useState(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
@@ -179,7 +180,10 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => listenToStoryStats(storyId, (stats) => setLikeCount(stats.likeCount)), [storyId]);
+  useEffect(() => listenToStoryStats(storyId, (stats) => {
+    setLikeCount(stats.likeCount);
+    setCommentCount(stats.commentCount);
+  }), [storyId]);
 
   useEffect(() => listenToUserLike(storyId, setLiked), [storyId]);
 
@@ -311,7 +315,7 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
               </button>
               <button type="button" style={actionButtonStyle} onClick={handleCommentClick} aria-label="Comentar">
                 <MessageCircle size={22} />
-                <span>Comentar</span>
+                <span>{commentCount}</span>
               </button>
               <button type="button" style={actionButtonStyle} onClick={handleShare} aria-label="Compartir">
                 <Share2 size={22} />
