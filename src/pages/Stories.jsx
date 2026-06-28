@@ -132,56 +132,60 @@ export default function Stories() {
       )}
 
       <div style={{ display: 'grid', gap: 34 }}>
-        {groupedStories.map((section) => (
-          <section key={section.category} className="soft-section" style={{ padding: 22, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
-              <div className="section-header" style={{ marginBottom: 0 }}>
-                <span className="eyebrow">{section.items.length} {section.items.length === 1 ? 'lectura' : 'lecturas'}</span>
-                <h2>{section.category}</h2>
-                <p>Historias cristianas sobre {section.category.toLowerCase()} para leer con calma y reflexión.</p>
+        {groupedStories.map((section) => {
+          const visibleStories = section.items.slice(0, 6);
+
+          return (
+            <section key={section.category} className="soft-section" style={{ padding: 22, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
+                <div className="section-header" style={{ marginBottom: 0 }}>
+                  <span className="eyebrow">{section.items.length} {section.items.length === 1 ? 'lectura' : 'lecturas'}</span>
+                  <h2>{section.category}</h2>
+                  <p>Historias cristianas sobre {section.category.toLowerCase()} para leer con calma y reflexión.</p>
+                </div>
+
+                <Link
+                  to={`/historias/categoria/${categorySlug(section.category)}`}
+                  aria-label={`Ver todas las historias de ${section.category}`}
+                  title={`Ver todas las historias de ${section.category}`}
+                  style={{
+                    flex: '0 0 auto',
+                    width: 46,
+                    height: 46,
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: '#8b651f',
+                    background: 'rgba(255, 248, 235, 0.95)',
+                    border: '1px solid rgba(184, 134, 43, 0.24)',
+                    borderRadius: 999,
+                    boxShadow: '0 12px 30px rgba(31,41,51,.08)'
+                  }}
+                >
+                  <ArrowRight size={22} />
+                </Link>
               </div>
 
-              <Link
-                to={`/historias/categoria/${categorySlug(section.category)}`}
-                aria-label={`Ver todas las historias de ${section.category}`}
-                title={`Ver todas las historias de ${section.category}`}
+              <div
                 style={{
-                  flex: '0 0 auto',
-                  width: 46,
-                  height: 46,
                   display: 'grid',
-                  placeItems: 'center',
-                  color: '#8b651f',
-                  background: 'rgba(255, 248, 235, 0.95)',
-                  border: '1px solid rgba(184, 134, 43, 0.24)',
-                  borderRadius: 999,
-                  boxShadow: '0 12px 30px rgba(31,41,51,.08)'
+                  gridAutoFlow: 'column',
+                  gridAutoColumns: 'minmax(340px, 520px)',
+                  gap: 18,
+                  overflowX: 'auto',
+                  overscrollBehaviorInline: 'contain',
+                  scrollSnapType: 'x proximity',
+                  paddingBottom: 12
                 }}
               >
-                <ArrowRight size={22} />
-              </Link>
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridAutoFlow: 'column',
-                gridAutoColumns: 'minmax(220px, calc((100% - 90px) / 6))',
-                gap: 18,
-                overflowX: 'auto',
-                overscrollBehaviorInline: 'contain',
-                scrollSnapType: 'x proximity',
-                paddingBottom: 12
-              }}
-            >
-              {section.items.map((story) => (
-                <div key={story.slug} style={{ scrollSnapAlign: 'start', minWidth: 0 }}>
-                  <StoryCard story={story} />
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+                {visibleStories.map((story) => (
+                  <div key={story.slug} style={{ scrollSnapAlign: 'start', minWidth: 0 }}>
+                    <StoryCard story={story} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </section>
   );
