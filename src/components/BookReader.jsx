@@ -264,6 +264,17 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
     }
   }
 
+  function buildAudioText() {
+    const parts = [];
+    if (page === 0) parts.push(title);
+    if (currentPage.isFirstChapterPage) {
+      parts.push(`Capítulo ${currentPage.chapterNumber}`);
+      parts.push(currentPage.chapterTitle);
+    }
+    parts.push(currentPage.content);
+    return parts.filter(Boolean).join('. ');
+  }
+
   function toggleAudio() {
     if (!('speechSynthesis' in window)) return;
 
@@ -273,8 +284,7 @@ export default function BookReader({ title, subtitle, chapters = [], pages = [],
       return;
     }
 
-    const text = `${title}. ${currentPage.chapterTitle}. ${currentPage.content}`;
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(buildAudioText());
     utterance.lang = 'es-ES';
     utterance.rate = 0.92;
     utterance.pitch = 1;
