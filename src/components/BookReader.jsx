@@ -12,6 +12,7 @@ import {
 
 const WIDTH_FACTOR = 0.94;
 const PAGE_BOTTOM_SAFETY = 28;
+const JUSTIFY_MIN_RATIO = 0.82;
 
 const cleanTitle = (v) => String(v || '').replace(/\s+/g, ' ').trim();
 const cleanBody = (v) => String(v || '')
@@ -51,6 +52,12 @@ function wrappedLines(ctx, text, width) {
   return n;
 }
 
+function shouldJustifyLine(ctx, line, width, isLastParagraphLine) {
+  if (!line || isLastParagraphLine) return false;
+  if ((line.match(/\s+/g) || []).length < 2) return false;
+  return ctx.measureText(line.trim()).width >= width * JUSTIFY_MIN_RATIO;
+}
+
 function wrapTextIntoVisualLines(ctx, text, width) {
   const cleaned = cleanBody(text);
   if (!cleaned) return [];
@@ -60,11 +67,12 @@ function wrapTextIntoVisualLines(ctx, text, width) {
   logicalLines.forEach((logicalLine) => {
     const line = logicalLine.trim();
     if (!line) {
-      visualLines.push('');
+      visualLines.push({ text: '', justify: false, empty: true });
       return;
     }
 
     const tokens = line.match(/\S+\s*/g) || [];
+    const paragraphLines = [];
     let currentLine = '';
 
     tokens.forEach((token) => {
@@ -73,19 +81,35 @@ function wrapTextIntoVisualLines(ctx, text, width) {
         currentLine = next;
         return;
       }
-      visualLines.push(currentLine.trimEnd());
+      paragraphLines.push(currentLine.trimEnd());
       currentLine = token;
     });
 
-    if (currentLine) visualLines.push(currentLine.trimEnd());
+    if (currentLine) paragraphLines.push(currentLine.trimEnd());
+
+    paragraphLines.forEach((visualLine, index) => {
+      const isLastParagraphLine = index === paragraphLines.length - 1;
+      visualLines.push({
+        text: visualLine,
+        justify: shouldJustifyLine(ctx, visualLine, width, isLastParagraphLine),
+        empty: false
+      });
+    });
   });
 
   return visualLines;
 }
 
+function pageText(lines = []) {
+  return lines.map((line) => line.text || '').join('\n').trim();
+}
+
 function paginate(text, layout, chapterTitle) {
   const ctx = canvasCtx();
-  if (!ctx || !layout.width || !layout.height || !layout.bodyLineHeight) return [cleanBody(text)];
+  if (!ctx || !layout.width || !layout.height || !layout.bodyLineHeight) {
+    const fallback = cleanBody(text);
+    return [{ lines: fallback ? [{ text: fallback, justify: false, empty: false }] : [], text: fallback }];
+  }
 
   const width = layout.width * WIDTH_FACTOR;
   const pageLimit = Math.max(layout.bodyLineHeight * 5, layout.height - PAGE_BOTTOM_SAFETY);
@@ -97,8 +121,9 @@ function paginate(text, layout, chapterTitle) {
   let usedHeight = 0;
 
   const save = () => {
-    const content = pageLines.join('\n').trim();
-    if (content) pages.push(content);
+    const lines = pageLines;
+    const textValue = pageText(lines);
+    if (textValue) pages.push({ lines, text: textValue });
     pageLines = [];
     usedHeight = 0;
   };
@@ -122,8 +147,11 @@ function paginate(text, layout, chapterTitle) {
   const visualLines = wrapTextIntoVisualLines(ctx, text, width);
   visualLines.forEach(addVisualLine);
 
-  if (pageLines.length) pages.push(pageLines.join('\n').trim());
-  return pages.length ? pages : [''];
+  if (pageLines.length) {
+    const textValue = pageText(pageLines);
+    if (textValue) pages.push({ lines: pageLines, text: textValue });
+  }
+  return pages.length ? pages : [{ lines: [], text: '' }];
 }
 
 export default function BookReader({ title, chapters = [], pages = [], storyId, storySlug }) {
@@ -146,8 +174,9 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     return source.flatMap((ch, ci) => {
       const chapterTitle = cleanTitle(ch.title || `Capítulo ${ci + 1}`);
       const chapterNumber = ci + 1;
-      return paginate(ch.content, layout, chapterTitle).map((content, i) => ({
-        content,
+      return paginate(ch.content, layout, chapterTitle).map((pageData, i) => ({
+        content: pageData.text,
+        lines: pageData.lines,
         chapterTitle,
         chapterNumber,
         first: i === 0
@@ -155,7 +184,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     });
   }, [chapters, pages, layout]);
 
-  const current = readerPages[page] || { content: '', chapterTitle: '', chapterNumber: 1, first: true };
+  const current = readerPages[page] || { content: '', lines: [], chapterTitle: '', chapterNumber: 1, first: true };
 
   useLayoutEffect(() => {
     const calc = () => {
@@ -307,7 +336,17 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
                   <h2 className="reader-chapter-title">{current.chapterTitle}</h2>
                 </div>
               )}
-              <p>{current.content}</p>
+              <p className="reader-lines">
+                {(current.lines || []).map((line, index) => (
+                  <span
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={`${page}-${index}`}
+                    className={`reader-line${line.empty ? ' reader-line-empty' : ''}${line.justify ? ' reader-line-justify' : ' reader-line-normal'}`}
+                  >
+                    {line.empty ? '\u00A0' : line.text}
+                  </span>
+                ))}
+              </p>
             </div>
           </div>
         </article>
