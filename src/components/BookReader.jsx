@@ -32,7 +32,7 @@ function takeTextChunk(text, maxChars) {
 }
 
 function getChapterHeaderCharacterCount(chapterNumber, chapterTitle) {
-  return normalizeText(`CAPÍTULO ${chapterNumber} ${chapterTitle}`).length;
+  return `CAPÍTULO ${chapterNumber}\n${String(chapterTitle || '').trim()}\n\n`.length;
 }
 
 function chunkChapterText(text, maxChars, chapterNumber, chapterTitle) {
