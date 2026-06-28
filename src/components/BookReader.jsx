@@ -173,11 +173,13 @@ const pageContentStyle = {
   flexDirection: 'column',
   minHeight: '100%',
   height: '100%',
-  paddingBottom: '86px'
+  paddingBottom: '58px',
+  boxSizing: 'border-box'
 };
 
 const textAreaStyle = {
-  height: '100%',
+  flex: 1,
+  minHeight: 0,
   overflow: 'hidden'
 };
 
@@ -208,7 +210,7 @@ const actionBarStyle = {
   left: 0,
   right: 0,
   bottom: 0,
-  paddingTop: '14px',
+  paddingTop: '8px',
   display: 'flex',
   alignItems: 'end',
   justifyContent: 'center',
