@@ -169,7 +169,7 @@ export default function Stories() {
                 style={{
                   display: 'grid',
                   gridAutoFlow: 'column',
-                  gridAutoColumns: 'minmax(340px, 520px)',
+                  gridAutoColumns: '520px',
                   gap: 18,
                   overflowX: 'auto',
                   overscrollBehaviorInline: 'contain',
@@ -178,7 +178,7 @@ export default function Stories() {
                 }}
               >
                 {visibleStories.map((story) => (
-                  <div key={story.slug} style={{ scrollSnapAlign: 'start', minWidth: 0 }}>
+                  <div key={story.slug} style={{ width: 520, height: '100%', scrollSnapAlign: 'start' }}>
                     <StoryCard story={story} />
                   </div>
                 ))}
