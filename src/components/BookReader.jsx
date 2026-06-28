@@ -37,7 +37,7 @@ function normalizeChapters({ chapters = [], pages = [] }) {
   ];
 }
 
-function renderMeasurementPage(measurer, { content, chapterNumber, chapterTitle, isFirstChapterPage }) {
+function renderMeasurementPage(measurer, { content, chapterNumber, chapterTitle, isFirstChapterPage, textAlign = 'justify' }) {
   measurer.innerHTML = '';
 
   const wrapper = document.createElement('div');
@@ -74,7 +74,7 @@ function renderMeasurementPage(measurer, { content, chapterNumber, chapterTitle,
   paragraph.style.fontSize = '1.04rem';
   paragraph.style.lineHeight = '1.58';
   paragraph.style.whiteSpace = 'pre-wrap';
-  paragraph.style.textAlign = 'left';
+  paragraph.style.textAlign = textAlign;
   paragraph.style.wordSpacing = 'normal';
   paragraph.style.letterSpacing = 'normal';
 
@@ -91,14 +91,15 @@ function buildVisualPages({ chapters, measurer, textArea }) {
   if (!availableHeight || !availableWidth) return [];
 
   const computedTextArea = window.getComputedStyle(textArea);
+  const textAlign = computedTextArea.textAlign || 'justify';
   measurer.style.width = `${availableWidth}px`;
   measurer.style.fontFamily = computedTextArea.fontFamily;
-  measurer.style.textAlign = 'left';
+  measurer.style.textAlign = textAlign;
   measurer.style.wordSpacing = 'normal';
   measurer.style.letterSpacing = 'normal';
 
   const fits = ({ content, chapterNumber, chapterTitle, isFirstChapterPage }) => {
-    renderMeasurementPage(measurer, { content, chapterNumber, chapterTitle, isFirstChapterPage });
+    renderMeasurementPage(measurer, { content, chapterNumber, chapterTitle, isFirstChapterPage, textAlign });
     return measurer.scrollHeight <= availableHeight;
   };
 
@@ -121,34 +122,21 @@ function buildVisualPages({ chapters, measurer, textArea }) {
     }
 
     while (cursor < tokens.length) {
-      let low = cursor + 1;
-      let high = tokens.length;
-      let best = cursor + 1;
+      let content = '';
+      let nextCursor = cursor;
 
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        const candidate = tokens.slice(cursor, mid).join('').trim();
-
-        if (fits({ content: candidate, chapterNumber, chapterTitle: chapter.title, isFirstChapterPage })) {
-          best = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
+      while (nextCursor < tokens.length) {
+        const candidate = `${content}${tokens[nextCursor]}`.trim();
+        if (!fits({ content: candidate, chapterNumber, chapterTitle: chapter.title, isFirstChapterPage })) {
+          break;
         }
+        content = candidate;
+        nextCursor += 1;
       }
 
-      let content = tokens.slice(cursor, best).join('').trim();
-
-      if (!fits({ content, chapterNumber, chapterTitle: chapter.title, isFirstChapterPage }) && content.length > 1) {
-        let cut = content.length;
-        while (cut > 1) {
-          cut -= 1;
-          const candidate = content.slice(0, cut).trim();
-          if (fits({ content: candidate, chapterNumber, chapterTitle: chapter.title, isFirstChapterPage })) {
-            content = candidate;
-            break;
-          }
-        }
+      if (!content && nextCursor < tokens.length) {
+        content = tokens[nextCursor].trim();
+        nextCursor += 1;
       }
 
       pages.push({
@@ -158,7 +146,7 @@ function buildVisualPages({ chapters, measurer, textArea }) {
         isFirstChapterPage
       });
 
-      cursor = Math.max(best, cursor + 1);
+      cursor = Math.max(nextCursor, cursor + 1);
       isFirstChapterPage = false;
     }
   });
@@ -190,7 +178,7 @@ const textAreaStyle = {
   flex: 1,
   minHeight: 0,
   overflow: 'hidden',
-  textAlign: 'left',
+  textAlign: 'justify',
   wordSpacing: 'normal',
   letterSpacing: 'normal'
 };
@@ -215,7 +203,7 @@ const readerTextStyle = {
   fontSize: '1.04rem',
   lineHeight: 1.58,
   whiteSpace: 'pre-wrap',
-  textAlign: 'left',
+  textAlign: 'justify',
   wordSpacing: 'normal',
   letterSpacing: 'normal'
 };
