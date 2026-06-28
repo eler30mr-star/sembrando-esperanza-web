@@ -269,23 +269,8 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     }
   }
 
-  function toggleAudio() {
+  function startAudio() {
     if (!('speechSynthesis' in window)) return;
-
-    if (speaking) {
-      window.speechSynthesis.pause();
-      setSpeaking(false);
-      setAudioPaused(true);
-      return;
-    }
-
-    if (audioPaused && utteranceRef.current) {
-      window.speechSynthesis.resume();
-      setSpeaking(true);
-      setAudioPaused(false);
-      return;
-    }
-
     const txt = [
       current.first ? `Capítulo ${current.chapterNumber}. ${current.chapterTitle}` : `Capítulo ${current.chapterNumber}`,
       current.content
@@ -309,6 +294,20 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     window.speechSynthesis.speak(u);
     setSpeaking(true);
     setAudioPaused(false);
+  }
+
+  function toggleAudio() {
+    if (!('speechSynthesis' in window)) return;
+
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      utteranceRef.current = null;
+      setSpeaking(false);
+      setAudioPaused(false);
+      return;
+    }
+
+    startAudio();
   }
 
   return (
