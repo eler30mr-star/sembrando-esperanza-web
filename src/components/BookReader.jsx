@@ -164,6 +164,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
   const audioStartTimeRef = useRef(0);
   const audioHadBoundaryRef = useRef(false);
   const pauseCancelRef = useRef(false);
+  const autoAdvanceRef = useRef(false);
   const [layout, setLayout] = useState({ width: 0, height: 0, bodyFont: '16px serif', bodyLineHeight: 24, titleFont: '16px serif', titleLineHeight: 24, titleMarginBottom: 8 });
   const [page, setPage] = useState(0);
   const [user, setUser] = useState(null);
@@ -258,6 +259,15 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
       setAudioPaused(false);
     }
   }, [page]);
+  useEffect(() => {
+    if (!autoAdvanceRef.current) return undefined;
+    autoAdvanceRef.current = false;
+    const nextText = readerPages[page]?.content || '';
+    const timer = window.setTimeout(() => {
+      if (nextText.trim()) speakFrom(nextText, 0);
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [page, readerPages]);
   useEffect(() => () => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); }, []);
   useEffect(() => setPage(0), [chapters, pages, layout.width, layout.height]);
 
@@ -334,6 +344,11 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
       audioStartIndexRef.current = 0;
       audioStartTimeRef.current = 0;
       audioHadBoundaryRef.current = false;
+      if (page < readerPages.length - 1) {
+        autoAdvanceRef.current = true;
+        setPage((v) => Math.min(v + 1, readerPages.length - 1));
+        return;
+      }
       setSpeaking(false);
       setAudioPaused(false);
     };
@@ -355,6 +370,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     if (speaking) {
       audioIndexRef.current = estimatedAudioIndex();
       pauseCancelRef.current = true;
+      autoAdvanceRef.current = false;
       window.speechSynthesis.cancel();
       utteranceRef.current = null;
       setSpeaking(false);
