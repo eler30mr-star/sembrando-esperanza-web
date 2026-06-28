@@ -11,8 +11,8 @@ function normalizeText(text) {
 function takeTextChunk(text, maxChars) {
   const cleanText = normalizeText(text);
 
-  if (!cleanText) {
-    return { chunk: '', remaining: '' };
+  if (!cleanText || maxChars <= 0) {
+    return { chunk: '', remaining: cleanText };
   }
 
   if (cleanText.length <= maxChars) {
@@ -34,7 +34,7 @@ function takeTextChunk(text, maxChars) {
 function chunkChapterText(text, maxChars, firstPageHeaderText = '') {
   const chunks = [];
   const headerLength = normalizeText(firstPageHeaderText).length;
-  const firstPageLimit = Math.max(220, maxChars - headerLength);
+  const firstPageLimit = Math.max(0, maxChars - headerLength);
   let remainingText = normalizeText(text);
 
   const firstChunk = takeTextChunk(remainingText, firstPageLimit);
