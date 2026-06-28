@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Home, MessageCircle, Pause, Play, Send, Share2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Home, MessageCircle, Pause, Play, Send, Share2, X } from 'lucide-react';
 import { listenToUser, loginWithGoogle } from '../services/authService.js';
 import {
   addStoryComment,
@@ -11,18 +11,7 @@ import {
 } from '../services/storyEngagementService.js';
 
 const WIDTH_FACTOR = 0.76;
-const PAGE_LINE_SAFETY = 9;
-const actionStyle = {
-  border: 0,
-  background: 'transparent',
-  color: '#6f4b16',
-  fontWeight: 800,
-  display: 'inline-flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 3,
-  cursor: 'pointer'
-};
+const PAGE_LINE_SAFETY = 6;
 
 const cleanTitle = (v) => String(v || '').replace(/\s+/g, ' ').trim();
 const cleanBody = (v) => String(v || '')
@@ -63,7 +52,7 @@ function wrappedLines(ctx, text, width) {
   return n;
 }
 
-function paginate(text, layout, chapterTitle, chapterNumber) {
+function paginate(text, layout, chapterTitle) {
   const toks = bodyTokens(text);
   const ctx = canvasCtx();
   if (!toks.length) return [''];
@@ -71,7 +60,7 @@ function paginate(text, layout, chapterTitle, chapterNumber) {
 
   ctx.font = layout.font;
   const width = layout.width * WIDTH_FACTOR;
-  const header = wrappedLines(ctx, `CAPÍTULO ${chapterNumber}`, width) + wrappedLines(ctx, chapterTitle, width) + 5;
+  const header = wrappedLines(ctx, chapterTitle, width) + 3;
   const pages = [];
   let page = [];
   let line = '';
@@ -128,6 +117,7 @@ function paginate(text, layout, chapterTitle, chapterNumber) {
 
 export default function BookReader({ title, chapters = [], pages = [], storyId, storySlug }) {
   const textBoxRef = useRef(null);
+  const utteranceRef = useRef(null);
   const [layout, setLayout] = useState({ width: 0, lines: 12, font: '16px serif' });
   const [page, setPage] = useState(0);
   const [user, setUser] = useState(null);
@@ -135,6 +125,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
   const [likeCount, setLikeCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
   const [speaking, setSpeaking] = useState(false);
+  const [audioPaused, setAudioPaused] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
@@ -144,7 +135,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     return source.flatMap((ch, ci) => {
       const chapterTitle = cleanTitle(ch.title || `Capítulo ${ci + 1}`);
       const chapterNumber = ci + 1;
-      return paginate(ch.content, layout, chapterTitle, chapterNumber).map((content, i) => ({
+      return paginate(ch.content, layout, chapterTitle).map((content, i) => ({
         content,
         chapterTitle,
         chapterNumber,
@@ -190,7 +181,14 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
   useEffect(() => listenToStoryStats(storyId, (s) => { setLikeCount(s.likeCount); setCommentCount(s.commentCount); }), [storyId]);
   useEffect(() => listenToUserLike(storyId, setLiked), [storyId]);
   useEffect(() => (showComments ? listenToComments(storyId, setComments) : undefined), [storyId, showComments]);
-  useEffect(() => { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); setSpeaking(false); } }, [page]);
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      utteranceRef.current = null;
+      setSpeaking(false);
+      setAudioPaused(false);
+    }
+  }, [page]);
   useEffect(() => () => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); }, []);
   useEffect(() => setPage(0), [chapters, pages, layout.width, layout.lines]);
 
@@ -217,34 +215,59 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
 
   function toggleAudio() {
     if (!('speechSynthesis' in window)) return;
+
     if (speaking) {
-      window.speechSynthesis.cancel();
+      window.speechSynthesis.pause();
       setSpeaking(false);
+      setAudioPaused(true);
       return;
     }
+
+    if (audioPaused && utteranceRef.current) {
+      window.speechSynthesis.resume();
+      setSpeaking(true);
+      setAudioPaused(false);
+      return;
+    }
+
     const txt = [
-      page === 0 ? title : '',
-      current.first ? `Capítulo ${current.chapterNumber}. ${current.chapterTitle}` : '',
+      current.first ? `Capítulo ${current.chapterNumber}. ${current.chapterTitle}` : `Capítulo ${current.chapterNumber}`,
       current.content
     ].filter(Boolean).join('. ');
     const u = new SpeechSynthesisUtterance(txt);
+    utteranceRef.current = u;
     u.lang = 'es-ES';
     u.rate = 0.92;
     u.pitch = 1;
-    u.onend = () => setSpeaking(false);
-    u.onerror = () => setSpeaking(false);
+    u.onend = () => {
+      utteranceRef.current = null;
+      setSpeaking(false);
+      setAudioPaused(false);
+    };
+    u.onerror = () => {
+      utteranceRef.current = null;
+      setSpeaking(false);
+      setAudioPaused(false);
+    };
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
     setSpeaking(true);
+    setAudioPaused(false);
   }
 
   return (
     <section className="reader-shell immersive-reader">
       <div className="reader-top immersive-reader-top">
-        <div>
-          <h1>{title}</h1>
+        <Link className="reader-icon-button reader-top-button" to="/historias" aria-label="Inicio">
+          <Home size={20} />
+        </Link>
+        <div className="reader-current-chapter">
+          <span>Capítulo {current.chapterNumber}</span>
+          <small>Página {Math.min(page + 1, readerPages.length)} de {readerPages.length || 1}</small>
         </div>
-        <span className="page-count">Página {Math.min(page + 1, readerPages.length)} de {readerPages.length || 1}</span>
+        <button className="reader-icon-button reader-top-button" type="button" onClick={toggleAudio} aria-label={speaking ? 'Pausar audio' : 'Reproducir audio'}>
+          {speaking ? <Pause size={22} /> : <Play size={22} />}
+        </button>
       </div>
 
       <div className="book-stage immersive-book-stage">
@@ -254,26 +277,10 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
             <div ref={textBoxRef} className="reader-text-box">
               {current.first && (
                 <div className="reader-chapter-header">
-                  <span>CAPÍTULO {current.chapterNumber}</span>
                   <h2 className="reader-chapter-title">{current.chapterTitle}</h2>
                 </div>
               )}
               <p>{current.content}</p>
-            </div>
-
-            <div className="reader-story-actions">
-              <button type="button" style={actionStyle} onClick={() => toggleStoryLike(storyId)} aria-label="Me gusta">
-                <Heart size={22} fill={liked ? 'currentColor' : 'none'} />
-                <span>{likeCount}</span>
-              </button>
-              <button type="button" style={actionStyle} onClick={() => setShowComments(true)} aria-label="Comentar">
-                <MessageCircle size={22} />
-                <span>{commentCount}</span>
-              </button>
-              <button type="button" style={actionStyle} onClick={shareStory} aria-label="Compartir">
-                <Share2 size={22} />
-                <span>Compartir</span>
-              </button>
             </div>
           </div>
         </article>
@@ -310,11 +317,24 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
         </div>
       )}
 
-      <div className="reader-controls immersive-reader-controls">
-        <Link className="reader-home-button" to="/historias"><Home size={18} /> Inicio</Link>
-        <button className="reader-triangle" onClick={() => setPage((v) => Math.max(v - 1, 0))} disabled={page === 0}>◀</button>
-        <button className="reader-audio-button" type="button" onClick={toggleAudio}>{speaking ? <Pause size={18} /> : <Play size={18} />} Audio</button>
-        <button className="reader-triangle" onClick={() => setPage((v) => Math.min(v + 1, readerPages.length - 1))} disabled={page === readerPages.length - 1}>▶</button>
+      <div className="reader-controls immersive-reader-controls" aria-label="Controles del lector">
+        <button className="reader-icon-button" onClick={() => setPage((v) => Math.max(v - 1, 0))} disabled={page === 0} aria-label="Página anterior">
+          <ChevronLeft size={24} />
+        </button>
+        <button className="reader-icon-button reader-reaction-button" type="button" onClick={() => toggleStoryLike(storyId)} aria-label="Me gusta">
+          <Heart size={22} fill={liked ? 'currentColor' : 'none'} />
+          <span>{likeCount}</span>
+        </button>
+        <button className="reader-icon-button reader-reaction-button" type="button" onClick={() => setShowComments(true)} aria-label="Comentar">
+          <MessageCircle size={22} />
+          <span>{commentCount}</span>
+        </button>
+        <button className="reader-icon-button" type="button" onClick={shareStory} aria-label="Compartir">
+          <Share2 size={22} />
+        </button>
+        <button className="reader-icon-button" onClick={() => setPage((v) => Math.min(v + 1, readerPages.length - 1))} disabled={page === readerPages.length - 1} aria-label="Página siguiente">
+          <ChevronRight size={24} />
+        </button>
       </div>
     </section>
   );
