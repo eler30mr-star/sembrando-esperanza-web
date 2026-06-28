@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const LIMIT = 900;
+const LIMIT = 901;
 
 function clean(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
