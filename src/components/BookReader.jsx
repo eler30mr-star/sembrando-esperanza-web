@@ -4,6 +4,8 @@ import { Heart, Home, MessageCircle, Pause, Play, Send, Share2, X } from 'lucide
 import { listenToUser, loginWithGoogle } from '../services/authService.js';
 import { addStoryComment, listenToComments, listenToStoryStats, listenToUserLike, toggleStoryLike } from '../services/storyEngagementService.js';
 
+const READER_LINE_CHARACTER_COUNT = 35;
+
 function normalizeText(text) {
   return String(text || '').replace(/\s+/g, ' ').trim();
 }
@@ -31,8 +33,17 @@ function takeTextChunk(text, maxChars) {
   };
 }
 
+function getLineCharacterCost(text) {
+  const cleanText = normalizeText(text);
+  return Math.max(1, Math.ceil(cleanText.length / READER_LINE_CHARACTER_COUNT)) * READER_LINE_CHARACTER_COUNT;
+}
+
 function getChapterHeaderCharacterCount(chapterNumber, chapterTitle) {
-  return `CAPÍTULO ${chapterNumber}\n${String(chapterTitle || '').trim()}\n\n`.length;
+  return (
+    getLineCharacterCost(`CAPÍTULO ${chapterNumber}`) +
+    getLineCharacterCost(chapterTitle) +
+    READER_LINE_CHARACTER_COUNT
+  );
 }
 
 function chunkChapterText(text, maxChars, chapterNumber, chapterTitle) {
