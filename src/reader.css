@@ -37,17 +37,20 @@ body:has(.immersive-reader-page),
 }
 
 .reader-page-content > div:first-child {
-  flex: 1 1 auto !important;
+  flex: 0 0 calc(100% - 76px) !important;
   min-height: 0 !important;
-  height: auto !important;
+  height: calc(100% - 76px) !important;
+  max-height: calc(100% - 76px) !important;
   overflow: hidden !important;
 }
 
 .reader-page-content > div:nth-child(2) {
   position: static !important;
-  flex: 0 0 auto !important;
+  flex: 0 0 76px !important;
+  height: 76px !important;
   padding-top: 8px !important;
   display: flex !important;
+  align-items: center !important;
   justify-content: center !important;
   gap: 18px !important;
 }
