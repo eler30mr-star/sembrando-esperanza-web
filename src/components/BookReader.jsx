@@ -27,6 +27,7 @@ const cleanBody = (v) => String(v || '')
   .replace(/\n{4,}/g, '\n\n\n')
   .trim();
 const wordTokens = (v) => cleanTitle(v).match(/\S+\s*/g) || [];
+const audioClean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
 
 function canvasCtx() {
   if (typeof document === 'undefined') return null;
@@ -262,7 +263,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
   useEffect(() => {
     if (!autoAdvanceRef.current) return undefined;
     autoAdvanceRef.current = false;
-    const nextText = readerPages[page]?.content || '';
+    const nextText = audioTextForPage(readerPages[page]);
     const timer = window.setTimeout(() => {
       if (nextText.trim()) speakFrom(nextText, 0);
     }, 80);
@@ -292,8 +293,15 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     }
   }
 
+  function audioTextForPage(pageData) {
+    if (!pageData) return '';
+    const heading = pageData.first ? audioClean(`Capítulo ${pageData.chapterNumber}. ${pageData.chapterTitle}`) : '';
+    const body = audioClean(pageData.content);
+    return [heading, body].filter(Boolean).join('. ');
+  }
+
   function currentAudioText() {
-    return current.content || '';
+    return audioTextForPage(current);
   }
 
   function wordStart(text, index) {
@@ -312,7 +320,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
 
   function speakFrom(text, startIndex = 0) {
     if (!('speechSynthesis' in window)) return;
-    const rawText = String(text || '');
+    const rawText = audioClean(text);
     const safeStart = wordStart(rawText, startIndex);
     const rawRemainder = rawText.slice(safeStart);
     const leadingSpaces = rawRemainder.length - rawRemainder.trimStart().length;
