@@ -5,47 +5,27 @@ import { listenToUser, loginWithGoogle } from '../services/authService.js';
 import { addStoryComment, listenToComments, listenToStoryStats, listenToUserLike, toggleStoryLike } from '../services/storyEngagementService.js';
 
 function chunkText(text, maxChars) {
-  const paragraphs = String(text || '')
-    .split(/\n\s*\n/g)
-    .map((item) => item.trim())
-    .filter(Boolean);
+  const cleanText = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleanText) return [''];
 
   const chunks = [];
-  let currentChunk = '';
+  let remainingText = cleanText;
 
-  paragraphs.forEach((paragraph) => {
-    const candidate = currentChunk ? `${currentChunk}\n\n${paragraph}` : paragraph;
+  while (remainingText.length > maxChars) {
+    let cutIndex = remainingText.lastIndexOf(' ', maxChars);
 
-    if (candidate.length <= maxChars) {
-      currentChunk = candidate;
-      return;
+    if (cutIndex < Math.floor(maxChars * 0.82)) {
+      cutIndex = maxChars;
     }
 
-    if (currentChunk) chunks.push(currentChunk);
+    chunks.push(remainingText.slice(0, cutIndex).trim());
+    remainingText = remainingText.slice(cutIndex).trim();
+  }
 
-    if (paragraph.length <= maxChars) {
-      currentChunk = paragraph;
-      return;
-    }
-
-    const sentences = paragraph.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [paragraph];
-    let sentenceChunk = '';
-
-    sentences.forEach((sentence) => {
-      const cleanSentence = sentence.trim();
-      const sentenceCandidate = sentenceChunk ? `${sentenceChunk} ${cleanSentence}` : cleanSentence;
-      if (sentenceCandidate.length <= maxChars) {
-        sentenceChunk = sentenceCandidate;
-      } else {
-        if (sentenceChunk) chunks.push(sentenceChunk);
-        sentenceChunk = cleanSentence;
-      }
-    });
-
-    currentChunk = sentenceChunk;
-  });
-
-  if (currentChunk) chunks.push(currentChunk);
+  if (remainingText) chunks.push(remainingText);
   return chunks.length ? chunks : [''];
 }
 
