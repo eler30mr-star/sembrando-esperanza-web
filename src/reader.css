@@ -30,6 +30,26 @@ body:has(.immersive-reader-page),
   position: relative;
   z-index: 2;
   width: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.reader-page-content > div:first-child {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+.reader-page-content > div:nth-child(2) {
+  position: static !important;
+  flex: 0 0 auto !important;
+  padding-top: 8px !important;
+  display: flex !important;
+  justify-content: center !important;
+  gap: 18px !important;
 }
 
 .reader-chapter-title {
