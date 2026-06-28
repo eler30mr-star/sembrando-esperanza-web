@@ -5,11 +5,28 @@ import { listenToUser, loginWithGoogle } from '../services/authService.js';
 import { addStoryComment, listenToComments, listenToStoryStats, listenToUserLike, toggleStoryLike } from '../services/storyEngagementService.js';
 
 function clean(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim();
+  return String(value || '').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function cleanContent(value) {
+  return String(value || '')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{4,}/g, '\n\n\n')
+    .trim();
 }
 
 function getWords(value) {
   return clean(value).match(/\S+\s*/g) || [];
+}
+
+function getTextTokens(value) {
+  return cleanContent(value).match(/\n|[^\s\n]+\s*/g) || [];
 }
 
 function getCanvas() {
@@ -42,15 +59,15 @@ function headerLineCount(ctx, chapterTitle, chapterNumber, layout) {
 }
 
 function splitByLines(text, layout, chapterTitle, chapterNumber) {
-  const words = getWords(text);
-  if (!words.length) return [''];
+  const textTokens = getTextTokens(text);
+  if (!textTokens.length) return [''];
 
   const ctx = getCanvas();
-  if (!ctx || !layout.width || !layout.maxLines) return [clean(text)];
+  if (!ctx || !layout.width || !layout.maxLines) return [cleanContent(text)];
   ctx.font = layout.font;
 
   const pages = [];
-  let pageWords = [];
+  let pageTokens = [];
   let currentLine = '';
   let usedLines = 1;
   let pageIndex = 0;
@@ -60,35 +77,53 @@ function splitByLines(text, layout, chapterTitle, chapterNumber) {
     return Math.max(4, layout.maxLines - headerLines);
   };
 
-  words.forEach((word) => {
-    const candidate = currentLine ? `${currentLine}${word}` : word;
+  const pushPage = () => {
+    const content = pageTokens.join('').trim();
+    if (content) pages.push(content);
+    pageTokens = [];
+    currentLine = '';
+    usedLines = 1;
+    pageIndex += 1;
+  };
+
+  textTokens.forEach((token) => {
+    if (token === '\n') {
+      if (usedLines + 1 > pageLineLimit()) {
+        pushPage();
+      } else {
+        pageTokens.push(token);
+        currentLine = '';
+        usedLines += 1;
+      }
+      return;
+    }
+
+    const candidate = currentLine ? `${currentLine}${token}` : token;
     const fitsLine = ctx.measureText(candidate.trim()).width <= layout.width;
 
     if (fitsLine) {
       currentLine = candidate;
-      pageWords.push(word);
+      pageTokens.push(token);
       return;
     }
 
     if (usedLines + 1 > pageLineLimit()) {
-      pages.push(pageWords.join('').trim());
-      pageWords = [word];
-      currentLine = word;
-      usedLines = 1;
-      pageIndex += 1;
+      pushPage();
+      pageTokens.push(token);
+      currentLine = token;
       return;
     }
 
-    pageWords.push(word);
-    currentLine = word;
+    pageTokens.push(token);
+    currentLine = token;
     usedLines += 1;
   });
 
-  if (pageWords.length) pages.push(pageWords.join('').trim());
+  if (pageTokens.length) pages.push(pageTokens.join('').trim());
   return pages.length ? pages : [''];
 }
 
-const textStyle = { margin: 0, fontSize: '1.04rem', lineHeight: 1.58, textAlign: 'justify' };
+const textStyle = { margin: 0, fontSize: '1.04rem', lineHeight: 1.58, textAlign: 'justify', whiteSpace: 'pre-wrap' };
 const actionStyle = { border: 0, background: 'transparent', color: '#6f4b16', fontWeight: 800, display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: 'pointer' };
 
 export default function BookReader({ title, chapters = [], pages = [], storyId, storySlug }) {
@@ -105,7 +140,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
   const [commentText, setCommentText] = useState('');
 
   const readerPages = useMemo(() => {
-    const source = chapters.length ? chapters : [{ title: 'Capítulo 1', content: pages.join(' ') }];
+    const source = chapters.length ? chapters : [{ title: 'Capítulo 1', content: pages.join('\n\n') }];
     return source.flatMap((chapter, chapterIndex) => {
       const chapterTitle = clean(chapter.title || `Capítulo ${chapterIndex + 1}`);
       const chapterNumber = chapterIndex + 1;
