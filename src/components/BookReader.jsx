@@ -157,6 +157,9 @@ function paginate(text, layout, chapterTitle) {
 export default function BookReader({ title, chapters = [], pages = [], storyId, storySlug }) {
   const textBoxRef = useRef(null);
   const utteranceRef = useRef(null);
+  const audioTextRef = useRef('');
+  const audioIndexRef = useRef(0);
+  const pauseCancelRef = useRef(false);
   const [layout, setLayout] = useState({ width: 0, height: 0, bodyFont: '16px serif', bodyLineHeight: 24, titleFont: '16px serif', titleLineHeight: 24, titleMarginBottom: 8 });
   const [page, setPage] = useState(0);
   const [user, setUser] = useState(null);
@@ -241,6 +244,9 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       utteranceRef.current = null;
+      audioTextRef.current = '';
+      audioIndexRef.current = 0;
+      pauseCancelRef.current = false;
       setSpeaking(false);
       setAudioPaused(false);
     }
@@ -269,23 +275,40 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     }
   }
 
-  function startAudio() {
+  function currentAudioText() {
+    return current.content || '';
+  }
+
+  function speakFrom(text, startIndex = 0) {
     if (!('speechSynthesis' in window)) return;
-    const txt = [
-      current.first ? `Capítulo ${current.chapterNumber}. ${current.chapterTitle}` : `Capítulo ${current.chapterNumber}`,
-      current.content
-    ].filter(Boolean).join('. ');
-    const u = new SpeechSynthesisUtterance(txt);
+    const rawText = String(text || '');
+    const safeStart = Math.max(0, Math.min(startIndex, rawText.length));
+    const rawRemainder = rawText.slice(safeStart);
+    const leadingSpaces = rawRemainder.length - rawRemainder.trimStart().length;
+    const actualStart = safeStart + leadingSpaces;
+    const spokenText = rawText.slice(actualStart);
+    if (!spokenText.trim()) return;
+
+    const u = new SpeechSynthesisUtterance(spokenText);
     utteranceRef.current = u;
+    audioTextRef.current = rawText;
+    audioIndexRef.current = actualStart;
+    pauseCancelRef.current = false;
     u.lang = 'es-ES';
     u.rate = 0.92;
     u.pitch = 1;
+    u.onboundary = (event) => {
+      if (typeof event.charIndex === 'number') audioIndexRef.current = actualStart + event.charIndex;
+    };
     u.onend = () => {
+      if (pauseCancelRef.current) return;
       utteranceRef.current = null;
+      audioIndexRef.current = 0;
       setSpeaking(false);
       setAudioPaused(false);
     };
     u.onerror = () => {
+      if (pauseCancelRef.current) return;
       utteranceRef.current = null;
       setSpeaking(false);
       setAudioPaused(false);
@@ -300,14 +323,20 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     if (!('speechSynthesis' in window)) return;
 
     if (speaking) {
+      pauseCancelRef.current = true;
       window.speechSynthesis.cancel();
       utteranceRef.current = null;
       setSpeaking(false);
-      setAudioPaused(false);
+      setAudioPaused(true);
       return;
     }
 
-    startAudio();
+    if (audioPaused) {
+      speakFrom(audioTextRef.current || currentAudioText(), audioIndexRef.current);
+      return;
+    }
+
+    speakFrom(currentAudioText(), 0);
   }
 
   return (
