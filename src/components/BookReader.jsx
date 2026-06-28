@@ -13,6 +13,7 @@ import {
 const WIDTH_FACTOR = 0.94;
 const PAGE_BOTTOM_SAFETY = 28;
 const JUSTIFY_MIN_RATIO = 0.82;
+const AUDIO_CHARS_PER_SECOND = 13;
 
 const cleanTitle = (v) => String(v || '').replace(/\s+/g, ' ').trim();
 const cleanBody = (v) => String(v || '')
@@ -159,6 +160,9 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
   const utteranceRef = useRef(null);
   const audioTextRef = useRef('');
   const audioIndexRef = useRef(0);
+  const audioStartIndexRef = useRef(0);
+  const audioStartTimeRef = useRef(0);
+  const audioHadBoundaryRef = useRef(false);
   const pauseCancelRef = useRef(false);
   const [layout, setLayout] = useState({ width: 0, height: 0, bodyFont: '16px serif', bodyLineHeight: 24, titleFont: '16px serif', titleLineHeight: 24, titleMarginBottom: 8 });
   const [page, setPage] = useState(0);
@@ -246,6 +250,9 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
       utteranceRef.current = null;
       audioTextRef.current = '';
       audioIndexRef.current = 0;
+      audioStartIndexRef.current = 0;
+      audioStartTimeRef.current = 0;
+      audioHadBoundaryRef.current = false;
       pauseCancelRef.current = false;
       setSpeaking(false);
       setAudioPaused(false);
@@ -279,10 +286,24 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     return current.content || '';
   }
 
+  function wordStart(text, index) {
+    let i = Math.max(0, Math.min(index, text.length));
+    while (i > 0 && /\S/.test(text[i - 1])) i -= 1;
+    return i;
+  }
+
+  function estimatedAudioIndex() {
+    const text = audioTextRef.current || currentAudioText();
+    if (!text) return 0;
+    if (audioHadBoundaryRef.current && audioIndexRef.current > 0) return wordStart(text, audioIndexRef.current);
+    const elapsedSeconds = Math.max(0, (performance.now() - audioStartTimeRef.current) / 1000);
+    return wordStart(text, audioStartIndexRef.current + Math.floor(elapsedSeconds * AUDIO_CHARS_PER_SECOND));
+  }
+
   function speakFrom(text, startIndex = 0) {
     if (!('speechSynthesis' in window)) return;
     const rawText = String(text || '');
-    const safeStart = Math.max(0, Math.min(startIndex, rawText.length));
+    const safeStart = wordStart(rawText, startIndex);
     const rawRemainder = rawText.slice(safeStart);
     const leadingSpaces = rawRemainder.length - rawRemainder.trimStart().length;
     const actualStart = safeStart + leadingSpaces;
@@ -293,17 +314,26 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     utteranceRef.current = u;
     audioTextRef.current = rawText;
     audioIndexRef.current = actualStart;
+    audioStartIndexRef.current = actualStart;
+    audioStartTimeRef.current = performance.now();
+    audioHadBoundaryRef.current = false;
     pauseCancelRef.current = false;
     u.lang = 'es-ES';
     u.rate = 0.92;
     u.pitch = 1;
     u.onboundary = (event) => {
-      if (typeof event.charIndex === 'number') audioIndexRef.current = actualStart + event.charIndex;
+      if (typeof event.charIndex === 'number') {
+        audioHadBoundaryRef.current = true;
+        audioIndexRef.current = wordStart(rawText, actualStart + event.charIndex);
+      }
     };
     u.onend = () => {
       if (pauseCancelRef.current) return;
       utteranceRef.current = null;
       audioIndexRef.current = 0;
+      audioStartIndexRef.current = 0;
+      audioStartTimeRef.current = 0;
+      audioHadBoundaryRef.current = false;
       setSpeaking(false);
       setAudioPaused(false);
     };
@@ -323,6 +353,7 @@ export default function BookReader({ title, chapters = [], pages = [], storyId, 
     if (!('speechSynthesis' in window)) return;
 
     if (speaking) {
+      audioIndexRef.current = estimatedAudioIndex();
       pauseCancelRef.current = true;
       window.speechSynthesis.cancel();
       utteranceRef.current = null;
