@@ -34,7 +34,7 @@ body:has(.immersive-reader-page),
   display: flex !important;
   flex-direction: column !important;
   min-height: 0 !important;
-  gap: 10px;
+  gap: 14px;
   overflow: hidden;
   padding-bottom: 0;
 }
@@ -42,7 +42,10 @@ body:has(.immersive-reader-page),
 .reader-text-box {
   flex: 1 1 auto;
   min-height: 0 !important;
-  overflow: hidden !important;
+  padding-bottom: 14px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
 }
 
 .reader-chapter-header {
@@ -60,8 +63,9 @@ body:has(.immersive-reader-page),
 
 .reader-story-actions {
   flex: 0 0 auto;
-  min-height: 58px;
-  padding-top: 6px;
+  min-height: 76px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(120, 79, 23, 0.08);
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -159,7 +163,11 @@ body:has(.immersive-reader-page),
   }
 
   .reader-page-content {
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .reader-text-box {
+    padding-bottom: 10px;
   }
 
   .reader-chapter-header {
@@ -173,8 +181,8 @@ body:has(.immersive-reader-page),
   }
 
   .reader-story-actions {
-    min-height: 52px;
-    padding-top: 4px;
+    min-height: 62px;
+    padding-top: 6px;
     gap: 14px !important;
   }
 
