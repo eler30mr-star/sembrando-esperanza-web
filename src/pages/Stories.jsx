@@ -170,18 +170,19 @@ export default function Stories() {
                   display: 'grid',
                   gridAutoFlow: 'column',
                   gridAutoColumns: '520px',
-                  gridAutoRows: '310px',
+                  gridAutoRows: '330px',
                   alignItems: 'stretch',
                   gap: 18,
                   overflowX: 'auto',
+                  overflowY: 'hidden',
                   overscrollBehaviorInline: 'contain',
                   scrollSnapType: 'x proximity',
                   paddingBottom: 12
                 }}
               >
                 {visibleStories.map((story) => (
-                  <div key={story.slug} style={{ width: 520, height: 310, scrollSnapAlign: 'start' }}>
-                    <div style={{ height: '100%' }}>
+                  <div key={story.slug} style={{ width: 520, height: 330, overflow: 'hidden', scrollSnapAlign: 'start' }}>
+                    <div style={{ height: '100%', overflow: 'hidden' }}>
                       <StoryCard story={story} />
                     </div>
                   </div>
