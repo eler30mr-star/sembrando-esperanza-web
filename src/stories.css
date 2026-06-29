@@ -103,8 +103,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background:
-    linear-gradient(180deg, rgba(12, 23, 20, 0.02) 0%, rgba(12, 23, 20, 0.16) 48%, rgba(12, 23, 20, 0.42) 100%);
+  background: linear-gradient(180deg, rgba(12, 23, 20, 0.02) 0%, rgba(12, 23, 20, 0.16) 48%, rgba(12, 23, 20, 0.42) 100%);
 }
 
 .story-cover-meta {
@@ -152,13 +151,6 @@
   overflow: hidden;
 }
 
-.story-cover-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .story-cover-button {
   display: inline-flex;
   align-items: center;
@@ -173,24 +165,20 @@
   box-shadow: 0 10px 20px rgba(36, 72, 61, 0.18);
 }
 
-.story-cover-stats {
+.story-cover-info::after {
+  content: "👁 0   ♥ 0";
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #5f5040;
-  font-size: 0.82rem;
-  font-weight: 900;
-}
-
-.story-cover-stats span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   min-height: 30px;
-  padding: 0 8px;
+  margin-left: 10px;
+  padding: 0 10px;
+  color: #5f5040;
   background: rgba(255, 255, 255, 0.62);
   border: 1px solid rgba(184, 134, 43, 0.16);
   border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  vertical-align: middle;
 }
 
 @media (max-width: 620px) {
@@ -220,12 +208,14 @@
     font-size: 1.08rem;
   }
 
-  .story-cover-stats {
-    gap: 5px;
-    font-size: 0.78rem;
+  .story-cover-button {
+    min-height: 34px;
+    padding: 0 15px;
   }
 
-  .story-cover-stats span {
-    padding: 0 7px;
+  .story-cover-info::after {
+    margin-left: 7px;
+    padding: 0 8px;
+    font-size: 0.78rem;
   }
 }
