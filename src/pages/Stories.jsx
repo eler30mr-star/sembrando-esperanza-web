@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import SectionHeader from '../components/SectionHeader.jsx';
-import ContentCard from '../components/ContentCard.jsx';
 import { getPublishedStories } from '../services/storiesService.js';
+import '../stories.css';
 
 const storyCategories = [
   'Fe',
@@ -38,16 +38,17 @@ function getCategoryFromSlug(slug) {
 }
 
 function StoryCard({ story }) {
+  const category = normalizeCategory(story.category);
+
   return (
-    <ContentCard
-      image={story.image}
-      title={story.title}
-      description={story.description}
-      meta={`${normalizeCategory(story.category)} · ${story.readingTime}`}
-      to={`/historias/${story.slug}`}
-      action="Leer historia"
-      variant="book"
-    />
+    <Link className="story-cover-card" to={`/historias/${story.slug}`}>
+      <img src={story.image} alt={story.title} loading="lazy" />
+      <span className="story-cover-meta">{category}</span>
+      <div className="story-cover-info">
+        <h3>{story.title}</h3>
+        <span className="story-cover-button">Leer</span>
+      </div>
+    </Link>
   );
 }
 
@@ -107,9 +108,11 @@ export default function Stories() {
           <p className="empty-copy">Aún no hay historias publicadas en esta sección.</p>
         )}
 
-        <div className="card-grid two">
+        <div className="story-category-grid">
           {categoryStories.map((story) => (
-            <StoryCard key={story.slug} story={story} />
+            <div className="story-row-item" key={story.slug}>
+              <StoryCard story={story} />
+            </div>
           ))}
         </div>
       </section>
@@ -131,60 +134,33 @@ export default function Stories() {
         <p className="empty-copy">Aún no hay historias publicadas.</p>
       )}
 
-      <div style={{ display: 'grid', gap: 34 }}>
+      <div className="story-sections">
         {groupedStories.map((section) => {
           const visibleStories = section.items.slice(0, 6);
 
           return (
-            <section key={section.category} className="soft-section" style={{ padding: 22, overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
-                <div className="section-header" style={{ marginBottom: 0 }}>
+            <section key={section.category} className="soft-section story-section-card">
+              <div className="story-section-head">
+                <div className="section-header">
                   <span className="eyebrow">{section.items.length} {section.items.length === 1 ? 'lectura' : 'lecturas'}</span>
                   <h2>{section.category}</h2>
                   <p>Historias cristianas sobre {section.category.toLowerCase()} para leer con calma y reflexión.</p>
                 </div>
 
                 <Link
+                  className="story-section-link"
                   to={`/historias/categoria/${categorySlug(section.category)}`}
                   aria-label={`Ver todas las historias de ${section.category}`}
                   title={`Ver todas las historias de ${section.category}`}
-                  style={{
-                    flex: '0 0 auto',
-                    width: 46,
-                    height: 46,
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: '#8b651f',
-                    background: 'rgba(255, 248, 235, 0.95)',
-                    border: '1px solid rgba(184, 134, 43, 0.24)',
-                    borderRadius: 999,
-                    boxShadow: '0 12px 30px rgba(31,41,51,.08)'
-                  }}
                 >
                   <ArrowRight size={22} />
                 </Link>
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridAutoFlow: 'column',
-                  gridAutoColumns: '520px',
-                  gridAutoRows: '330px',
-                  alignItems: 'stretch',
-                  gap: 18,
-                  overflowX: 'auto',
-                  overflowY: 'hidden',
-                  overscrollBehaviorInline: 'contain',
-                  scrollSnapType: 'x proximity',
-                  paddingBottom: 12
-                }}
-              >
+              <div className="story-row">
                 {visibleStories.map((story) => (
-                  <div key={story.slug} style={{ width: 520, height: 330, overflow: 'hidden', scrollSnapAlign: 'start' }}>
-                    <div style={{ height: '100%', overflow: 'hidden' }}>
-                      <StoryCard story={story} />
-                    </div>
+                  <div className="story-row-item" key={story.slug}>
+                    <StoryCard story={story} />
                   </div>
                 ))}
               </div>
